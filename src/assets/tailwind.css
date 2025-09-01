@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+@custom-variant dark (&:where(.dark-mode, .dark-mode *));
+
+:root {
+  --p-avatar-xl-width: 80px;
+  --p-avatar-xl-height: 80px;
+}
+
+/* default bias up a bit for MLB headshots */
+.p-avatar img {
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+/* global CSS (tailwind.css or a layout <style>) */
+.bleed-x {
+  width: 100dvw;                              /* ignore scrollbar width */
+  margin-left: calc(50% - 50dvw);
+  margin-right: calc(50% - 50dvw);
+}
+@supports not (width: 100dvw) {
+  .bleed-x {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+}

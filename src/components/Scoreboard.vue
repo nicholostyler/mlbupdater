@@ -38,6 +38,14 @@
           </div>
         </div>
 
+        <div v-if="!isLive" class="flex items-center text-sm text-gray-600 mt-2">
+          <!-- Probable pitchers: only pregame -->
+            <span class="font-medium mr-2">Probable Pitchers:</span>
+            <span class="mr-2">{{ probableAway }}</span>
+            <span class="mx-1">•</span>
+            <span>{{ homeTeamName }} — {{ probableHome }}</span>
+        </div>
+
         <!-- Details (live only) -->
         <div v-if="isLive" class="row-center details">
           <span>{{ outsText }}</span>
@@ -55,29 +63,15 @@ import Card from 'primevue/card';
 import { useTeam } from '@/composables/useTeam';
 import { fetchTodaysTeamGame, fetchLiveGame, todayYYYYMMDD, type ScheduleGame } from '@/services/mlb';
 import { useRouter } from 'vue-router';
+import type { LiveGame} from '@/data/models/game-details.ts';
 
-type LinescoreTeams = {
-  away?: { runs?: number };
-  home?: { runs?: number };
-};
-type LiveLinescore = {
-  teams?: LinescoreTeams;
-  currentInning?: number;
-  isTopInning?: boolean;
-  outs?: number;
-  offense?: { leftOnBase?: number };
-};
-type LiveFeed = {
-  gameData?: { status?: { abstractGameState?: string; detailedState?: string } };
-  liveData?: { linescore?: LiveLinescore };
-};
 
 //const emit = defineEmits<{ (e: 'open-game', gamePk: number): void }>();
 
 const { favorite } = useTeam();
 const loading = ref(true);
 const game = ref<ScheduleGame | null>(null);
-const live = ref<LiveFeed | null>(null);
+const live = ref<LiveGame | null>(null);
 const router = useRouter();
 
 function ordinal(n?: number): string {
@@ -86,6 +80,10 @@ function ordinal(n?: number): string {
   const v = n % 100;
   return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 }
+
+const probableAway = computed(() => live.value?.gameData?.probablePitchers?.away?.fullName ?? '');
+const probableHome = computed(() => live.value?.gameData?.probablePitchers?.home?.fullName ?? '');
+
 
 const statusFromSchedule = computed(() => game.value?.status?.detailedState);
 const statusFromLive = computed(() => live.value?.gameData?.status?.detailedState);
@@ -127,7 +125,7 @@ async function load() {
   const date = todayYYYYMMDD();
   game.value = await fetchTodaysTeamGame(favorite.value!.id, date);
   if (game.value?.gamePk) {
-    try { live.value = await fetchLiveGame(game.value.gamePk) as LiveFeed; } catch {/* non-fatal */}
+    try { live.value = await fetchLiveGame(game.value.gamePk) as LiveGame; } catch {/* non-fatal */}
   }
   loading.value = false;
 }
@@ -146,7 +144,7 @@ watch(abstractState, (s) => {
   if (s === 'Live') {
     timer = window.setInterval(async () => {
       if (game.value?.gamePk) {
-        try { live.value = await fetchLiveGame(game.value.gamePk) as LiveFeed; } catch {}
+        try { live.value = await fetchLiveGame(game.value.gamePk) as LiveGame; } catch {}
       }
     }, 30000);
   }

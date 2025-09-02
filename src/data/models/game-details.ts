@@ -58,6 +58,18 @@ export interface LiveGame {
     };
     venue?: { name?: string };
     datetime?: { time?: string };
+    probablePitchers?: {
+      away?: {
+        id?: number;
+        fullName?: string;
+        link?: string;
+      };
+      home?: {
+        id?: number;
+        fullName?: string;
+        link?: string;
+      };
+    };
   };
   liveData?: {
     linescore?: {
@@ -67,6 +79,56 @@ export interface LiveGame {
         away?: { runs?: number };
         home?: { runs?: number };
       };
+      balls?: number;
+      strikes?: number;
+      outs?: number;
+      defense?: {
+        pitcher?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        };
+        batter?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        };
+        onDeck?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        };
+        inHole?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        }
+
+      }
+      offense?: {
+        pitcher?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        };
+        batter?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        };
+        onDeck?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        };
+        inHole?: {
+          id?: number;
+          fullName?: string;
+          link?: string;
+        };
+        leftOnBase?: number;
+
+      }
     };
     plays?: { allPlays?: Play[] };
   };

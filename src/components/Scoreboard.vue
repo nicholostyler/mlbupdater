@@ -161,7 +161,7 @@ function open() {
 }
 
 onMounted(load);
-
+/*
 // Poll during live
 let timer: number | undefined;
 watch(abstractState, (s) => {
@@ -175,6 +175,8 @@ watch(abstractState, (s) => {
   }
 });
 onUnmounted(() => { if (timer) window.clearInterval(timer); });
+
+ */
 </script>
 
 <style scoped>

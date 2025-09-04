@@ -5,7 +5,7 @@
     </section>
 
     <section class="mt-6">
-      <TenDayStretch @go-schedule="goSchedule" />
+      <TenDayStretch />
     </section>
 
     <section class="mt-6">
@@ -25,11 +25,9 @@ import TenDayStretch from '@/components/TenDayStretch.vue';
 import DivisionStanding from '@/components/DivisionStanding.vue';
 import TeamMVPs from '@/components/TeamMVPs.vue';
 import { useTeam } from '@/composables/useTeam.ts'
-const router = useRouter();
 
 const favTeamId = favorite.value?.id ?? 143;
 
-function goSchedule() { router.push({ name: 'schedule' }); }
 
 
 

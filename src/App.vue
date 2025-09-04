@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f7fbf9] dark:bg-slate-900">
     <Menubar :model="items" class="px-2">
-      <!-- Critical: custom item renderer that preserves RouterLink behavior -->
       <template #item="{ item, props }">
         <!-- Internal routes -->
         <RouterLink
@@ -60,10 +59,13 @@ import { RouterLink } from 'vue-router'
 import Menubar from 'primevue/menubar'
 import InputSwitch from 'primevue/inputswitch'
 import type { MenuItem } from 'primevue/menuitem'
+import { useTeam } from '@/composables/useTeam';
+
+const { favorite } = useTeam();
 
 const items = ref<MenuItem[]>([
   { label: 'Home',       icon: 'pi pi-home',       to: { name: 'home' },       routerLinkActiveOptions: { exact: true } },
-  { label: 'Schedule', icon: 'pi pi-calendar',   to: { name: 'games' } },
+  { label: 'Schedule', icon: 'pi pi-calendar',   to: { name: 'team-schedule', params: { teamId: favorite.value?.id} } },
   { label: 'Scoreboard', icon: 'pi pi-calendar',   to: { name: 'scoreboard' } },
   { label: 'Standings',  icon: 'pi pi-globe',      to: { name: 'standings'} },
   { label: 'Stats',      icon: 'pi pi-chart-line', },

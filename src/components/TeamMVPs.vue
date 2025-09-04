@@ -1,14 +1,12 @@
 <!-- TeamMVPs.vue (Vue 3 + Tailwind + PrimeVue) -->
 <template>
   <section class="relative">
-    <!-- Section badge -->
-    <div class="mb-2">
-      <span
-        class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white/80 px-2.5 py-1 text-sm font-medium shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80"
-      >
-        Team Leaders
-      </span>
-    </div>
+    <header class="mb-2 flex items-center justify-between">
+      <h2 class="text-lg font-semibold tracking-tight">
+        Team MVPs
+      </h2>
+
+    </header>
 
     <!-- Loading skeletons -->
     <div v-if="loading" class="grid gap-4 sm:grid-cols-2">

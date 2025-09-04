@@ -1,4 +1,17 @@
 <template>
+  <header class="mb-2 flex items-center justify-between">
+    <h2 class="text-lg font-semibold tracking-tight">
+      10-Day Stretch
+    </h2>
+    <div class="text-sm text-gray-500">
+      <router-link
+        :to="{ name: 'team-schedule', params: { teamId: favoriteTeamNumber } }"
+        class="text-sm text-blue-600 hover:underline cursor-pointer"
+      >
+        View Schedule
+      </router-link>
+    </div>
+  </header>
   <div
     ref="scroller"
     class="w-full overflow-x-auto overflow-y-hidden touch-pan-x snap-x snap-mandatory" >
@@ -43,11 +56,11 @@ const end = addDays(today, 5);
 const router = useRouter();
 
 
-
+const favoriteTeamNumber = favorite.value!.id;
 
 
 function openSchedule() {
-  const favoriteTeamNumber = favorite.value!.id;
+
   if (favoriteTeamNumber) router.push({ name: 'team-schedule', params: { teamId: favoriteTeamNumber } });
 }
 
@@ -69,58 +82,6 @@ type CardVM = {
   result: 'Win' | 'Loss' | 'Tie' | '';
   state: string;
 };
-
-const cards = computed<CardVM[]>(() => {
-  const youId = favorite.value!.id;
-
-  return games.value.map((g) => {
-    const home = g.teams.home.team;
-    const away = g.teams.away.team;
-    const homeAbbr = abbr(home);
-    const awayAbbr = abbr(away);
-
-    const yourName = favorite.value!.name;
-    const matchup = TeamHelpers.abbreviateMatchup(home.name, away.name, yourName)
-      .replace(home.name, homeAbbr)
-      .replace(away.name, awayAbbr);
-
-    const isFinal = g.status.detailedState?.startsWith('Final');
-    const isLive = g.status.abstractGameState === 'Live';
-    const state = (isFinal && 'Final') || (isLive && 'In Progress') || g.status.detailedState || '—';
-
-    const homeScore = g.teams.home.score ?? null;
-    const awayScore = g.teams.away.score ?? null;
-
-    let yourScore: number | null = null;
-    let oppScore: number | null = null;
-    const yourHome = home.id === youId;
-
-    if (homeScore != null && awayScore != null) {
-      yourScore = yourHome ? homeScore : awayScore;
-      oppScore = yourHome ? awayScore : homeScore;
-    }
-
-    let result: CardVM['result'] = '';
-    if (yourScore != null && oppScore != null) {
-      if (yourScore > oppScore) result = 'Win';
-      else if (yourScore < oppScore) result = 'Loss';
-      else result = 'Tie';
-    }
-
-    const scoreText = yourScore != null && oppScore != null ? `${yourScore} - ${oppScore}` : null;
-
-    console.log(g.venue?.name)
-    return {
-      gamePk: g.gamePk,
-      dateText: fmtDateLong(g.gameDate),
-      matchup,
-      venue: g.venue?.name ?? '',
-      scoreText,
-      result,
-      state,
-    };
-  });
-});
 
 function clampScroll() {
   const el = scroller.value;

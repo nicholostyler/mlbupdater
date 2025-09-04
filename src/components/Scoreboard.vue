@@ -1,5 +1,5 @@
 <template>
-  <Card class="score-card cursor-pointer" @click="open">
+  <Card class="cursor-pointer" @click="open">
     <template #content>
       <div v-if="loading" class="row-center gap-2">
         <i class="pi pi-spin pi-spinner" /> Loading...
@@ -19,31 +19,29 @@
           </span>
         </div>
 
-        <!-- Scores -->
+        <!-- Teams / Scores -->
         <div class="scores row-between">
           <div class="teamcol" :class="{ active: isLive && isTopInning && !isGameOver }">
-            <div class="team">{{ awayTeamName }}</div>
+            <div class="team text-center">{{ awayTeamName }}</div>
             <div class="score" :class="{ bold: isLive && isTopInning && !isGameOver }">
               {{ awayScoreDisplay }}
+            </div>
+            <div v-if="!isLive" class="text-center">
+              ({{ probableAway}})
             </div>
           </div>
 
           <div class="vs">vs</div>
 
           <div class="teamcol" :class="{ active: isLive && !isTopInning && !isGameOver }">
-            <div class="team team--accent">{{ homeTeamName }}</div>
+            <div class="team team--accent text-center" >{{ homeTeamName }}</div>
             <div class="score score--accent" :class="{ bold: isLive && !isTopInning && !isGameOver }">
               {{ homeScoreDisplay }}
             </div>
+            <div v-if="!isLive" class="text-center">
+              ({{ probableHome }})
+            </div>
           </div>
-        </div>
-
-        <div v-if="!isLive" class="flex items-center text-sm text-gray-600 mt-2">
-          <!-- Probable pitchers: only pregame -->
-            <span class="font-medium mr-2">Probable Pitchers:</span>
-            <span class="mr-2">{{ probableAway }}</span>
-            <span class="mx-1">•</span>
-            <span>{{ homeTeamName }} — {{ probableHome }}</span>
         </div>
 
         <!-- Details (live only) -->
@@ -61,9 +59,11 @@
 import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import Card from 'primevue/card';
 import { useTeam } from '@/composables/useTeam';
-import { fetchTodaysTeamGame, fetchLiveGame, todayYYYYMMDD, type ScheduleGame } from '@/services/mlb';
+import { fetchTodaysTeamGame, fetchLiveGame, todayYYYYMMDD } from '@/services/mlb';
 import { useRouter } from 'vue-router';
 import type { LiveGame} from '@/data/models/game-details.ts';
+import type { ScheduleGame } from '@/data/models/ScheduleGame.ts';
+import { localStartTime } from '@/data/models/ScheduleGame.ts'
 
 
 //const emit = defineEmits<{ (e: 'open-game', gamePk: number): void }>();
@@ -72,6 +72,14 @@ const { favorite } = useTeam();
 const loading = ref(true);
 const game = ref<ScheduleGame | null>(null);
 const live = ref<LiveGame | null>(null);
+
+interface ScoreboardProps {
+  teamId?: number;
+  gameSchedule?: ScheduleGame;
+}
+
+const props = defineProps<ScoreboardProps>()
+
 const router = useRouter();
 
 function ordinal(n?: number): string {
@@ -100,7 +108,7 @@ const isGameOver = computed(() => abstractState.value === 'Final' || statusFromL
 const bannerText = computed(() => {
   if (isGameOver.value) return 'Final';
   if (isLive.value && inning.value) return `${isTopInning.value ? 'Top' : 'Bot'} ${ordinal(inning.value)}`;
-  return statusFromSchedule.value || statusFromLive.value || 'No Game';
+  return (game.value?.gameDate ? `${statusFromSchedule.value} @ ${localStartTime(game.value.gameDate)}` : '') || statusFromLive.value || 'No Game';
 });
 
 const awayTeamName = computed(() => game.value?.teams.away.team.name ?? '');
@@ -121,13 +129,30 @@ const leftOnBase = computed(() => linescore.value?.offense?.leftOnBase);
 const leftOnBaseText = computed(() => (leftOnBase.value != null ? String(leftOnBase.value) : ''));
 
 async function load() {
-  loading.value = true;
-  const date = todayYYYYMMDD();
-  game.value = await fetchTodaysTeamGame(favorite.value!.id, date);
+  const teamId = resolveTeamId();
+  const gameSchedule = resolvedScheduledGame();
+  if (teamId) {
+    const date = todayYYYYMMDD();
+    game.value = await fetchTodaysTeamGame(teamId, date);
+  } else if (gameSchedule) {
+    game.value = gameSchedule;
+  }
+
   if (game.value?.gamePk) {
+    loading.value = true;
+
     try { live.value = await fetchLiveGame(game.value.gamePk) as LiveGame; } catch {/* non-fatal */}
   }
   loading.value = false;
+  console.log('loaded', game.value);
+}
+
+function resolveTeamId(): number | undefined {
+  return props.teamId ?? undefined
+}
+
+function resolvedScheduledGame(): ScheduleGame | undefined {
+  return props.gameSchedule ?? undefined
 }
 
 function open() {
@@ -158,9 +183,6 @@ onUnmounted(() => { if (timer) window.clearInterval(timer); });
 .row-between { display: flex; align-items: center; justify-content: space-evenly; }
 .text-muted { color: var(--p-text-muted-color); }
 
-/* Card look (rounded, subtle) */
-/*.score-card :deep(.p-card) { border-radius: 16px; }
-.score-card :deep(.p-card-content) { padding: 1rem 1.25rem; }*/
 
 /* Banner (e.g., "↓ Bot 3rd") */
 .banner { gap: .5rem; margin-bottom: .5rem; }
@@ -169,7 +191,7 @@ onUnmounted(() => { if (timer) window.clearInterval(timer); });
 
 /* Score row */
 .scores { gap: 1rem; margin: .25rem 0; }
-.teamcol { display: grid; grid-template-columns: 1fr; justify-items: center; gap: .25rem; min-width: 120px; }
+.teamcol { display: grid; grid-template-columns: 1fr; justify-items: center; gap: .25rem;  }
 .team { font-size: .95rem; color: var(--text-color); }
 .team--accent { color: var(--p-primary-700, #3b82f6); font-weight: 600; }
 .score { font-size: 2rem; font-weight: 600; line-height: 1; }

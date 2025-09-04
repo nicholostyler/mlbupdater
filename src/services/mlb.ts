@@ -1,6 +1,7 @@
 // Minimal MLB Stats API client (free, no key)
 import type { PlayerInfo, PlayerSeasonStats } from '@/data/models/Player.ts'
 import { DIVISIONS, teamFromId, type DivisionKey} from '@/utils/TeamHelpers.ts'
+import type { ScheduleGame } from '@/data/models/ScheduleGame.ts'
 
 const BASE = 'https://statsapi.mlb.com';
 
@@ -51,16 +52,7 @@ export async function fetchTeam(teamId: number): Promise<StatsApiTeam | null> {
 
 // --- Schedule
 
-export interface ScheduleGame {
-  gamePk: number;
-  gameDate: string; // ISO
-  status: { abstractGameState: string; detailedState: string };
-  teams: {
-    away: { team: StatsApiTeam; score?: number };
-    home: { team: StatsApiTeam; score?: number };
-  };
-  venue?: { name: string };
-}
+
 
 export async function fetchTeamSchedule(teamId: number, startDate: string, endDate: string) {
   const data = await get<{ dates: { date: string; games: ScheduleGame[] }[] }>(
@@ -79,6 +71,15 @@ export async function fetchTodaysTeamGame(teamId: number, date: string) {
 export async function fetchLiveGame(gamePk: number) {
   // live feed includes linescore, plays, etc.
   return await get<any>(`/api/v1.1/game/${gamePk}/feed/live`);
+}
+
+export async function fetchSchedulesByDate(date: string) : Promise<ScheduleGame[]> {
+  const data = await get<{ dates: { date: string; games: ScheduleGame[] }[] }>(
+    `/api/v1/schedule?sportId=1&date=${date}`
+  );
+  const games: ScheduleGame[] = [];
+  for (const d of data.dates ?? []) games.push(...(d.games ?? []));
+  return games;
 }
 
 // --- Standings (division-filtered)

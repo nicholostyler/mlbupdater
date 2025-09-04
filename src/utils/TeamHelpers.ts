@@ -42,10 +42,11 @@ export class TeamHelpers {
   /**
    * Formats a short matchup like "PHI vs BOS" (if your team is home) or "BOS @ PHI".
    */
-  static abbreviateMatchup(homeTeam: string, awayTeam: string, yourTeam: string): string {
+  static abbreviateMatchup(homeTeam: string, awayTeam: string, yourTeam: string | undefined): string {
     const home = TeamHelpers.abbreviateTeamName(homeTeam);
     const away = TeamHelpers.abbreviateTeamName(awayTeam);
-    return homeTeam === yourTeam ? `${home} vs ${away}` : `${away} @ ${home}`;
+    if (yourTeam == null) return `${home} vs ${away}`;
+    else return homeTeam === yourTeam ? `${home} vs ${away}` : `${away} @ ${home}`;
   }
 
   static divisionFromId = (divisionId: number) =>

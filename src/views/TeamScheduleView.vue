@@ -1,43 +1,8 @@
 <template>
   <!-- Card layout for mobile -->
   <div class="md:hidden grid gap-3 list-none p-0 m-0">
-    <li v-for="game in tableRows" :key="game.gamePk">
-      <Card
-        class="gcard"
-
-      >
-        <template #content>
-          <div class="ggrid">
-            <!-- Left column: date -->
-            <div class="gcol gcol-left">
-              <div class="date">{{ game.gameDateLabel }}</div>
-            </div>
-
-            <!-- Middle: matchup + venue -->
-            <div class="gcol gcol-mid">
-              <div class="matchup">{{ game.matchup }}</div>
-              <div class="venue">{{ game.venue }}</div>
-            </div>
-
-            <!-- Right: score + result -->
-            <div class="gcol gcol-right">
-              <div class="score" v-if="game.scoreText">{{ game.scoreText }}</div>
-              <div class="score" v-else>—</div>
-              <div
-                class="result"
-                :class="{
-                    win: game.result === 'Win',
-                    loss: game.result === 'Loss',
-                    tie: game.result === 'Tie',
-                    muted: !game.result
-                  }"
-              >
-                {{ game.result || game.state }}
-              </div>
-            </div>
-          </div>
-        </template>
-      </Card>
+    <li v-for="game in games" :key="game.gamePk">
+      <ScheduleCard :game="game" :teamId="favorite?.id"/>
     </li>
   </div>
   <!-- Desktop table -->
@@ -55,10 +20,11 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import Card from 'primevue/card';
+import ScheduleCard from '@/components/ScheduleCard.vue'
 import Tag from 'primevue/tag';
 import { useTeam } from '@/composables/useTeam';
 import { fetchTeamSchedule } from '@/services/mlb';
-import type { ScheduleGame } from '@/services/mlb';
+import { type ScheduleGame, toTableVM } from '@/data/models/ScheduleGame.ts'
 import { useRouter } from 'vue-router';
 import { TeamHelpers } from '@/utils/TeamHelpers';
 
@@ -67,8 +33,7 @@ import { TeamHelpers } from '@/utils/TeamHelpers';
 
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';
-import Row from 'primevue/row';
+
 
 
 const { favorite } = useTeam();
@@ -88,74 +53,9 @@ function fmtDateLong(d: string): string {
   return dt.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-type TableVM = {
-  gamePk?: number;
-  gameDateLabel?: string;
-  awayTeamLabel?: string;
-  homeTeamLabel?: string;
-  statusLabel?: string;
-  matchup?: string;
-  venue?: string;
-  scoreText?: string | null;
-  result?: string;
-  state?: string;
-};
-
-const tableRows = computed<TableVM[]>(() => {
-  const favoriteId = favorite.value!.id;
-
-  return games.value.map((game) => {
-    const home = game.teams.home.team;
-    const away = game.teams.away.team;
-    const homeAbbr = abbr(home);
-    const awayAbbr = abbr(away);
-
-    const yourName = favorite.value!.name;
-    const matchup = TeamHelpers.abbreviateMatchup(home.name, away.name, yourName)
-      .replace(home.name, homeAbbr)
-      .replace(away.name, awayAbbr);
-
-    const isFinal = game.status.detailedState?.startsWith('Final');
-    const isLive = game.status.abstractGameState === 'Live';
-    const state = (isFinal && 'Final') || (isLive && 'In Progress') || game.status.detailedState || '—';
-
-    const homeScore = game.teams.home.score ?? null;
-    const awayScore = game.teams.away.score ?? null;
-
-    // Score shown as YOUR_TEAM first (regardless of home/away)
-    let yourScore: number | null = null;
-    let oppScore: number | null = null;
-    const yourHome = home.id === favoriteId;
-
-    if (homeScore != null && awayScore != null) {
-      yourScore = yourHome ? homeScore : awayScore;
-      oppScore = yourHome ? awayScore : homeScore;
-    }
-
-    let result: TableVM['result'] = '';
-    if (yourScore != null && oppScore != null) {
-      if (yourScore > oppScore) result = 'Win';
-      else if (yourScore < oppScore) result = 'Loss';
-      else result = 'Tie';
-    }
-
-    const scoreText = yourScore != null && oppScore != null ? `${yourScore} - ${oppScore}` : null;
-
-    return {
-      gamePk: game.gamePk,
-      gameDateLabel: fmtDateLong(game.gameDate),
-      awayTeamLabel: away.name,
-      homeTeamLabel: home.name,
-      matchup,
-      venue: game.venue?.name ?? '',
-      scoreText,
-      result,
-      state,
-
-    };
-  });
-});
-
+const tableRows = computed(() => games.value.map(g => {
+  return toTableVM(g, favorite.value?.id)
+}))
 
 onMounted(async () => {
   games.value = await fetchTeamSchedule(favorite.value!.id, start, end);

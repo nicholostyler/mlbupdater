@@ -64,7 +64,7 @@ import type { MenuItem } from 'primevue/menuitem'
 const items = ref<MenuItem[]>([
   { label: 'Home',       icon: 'pi pi-home',       to: { name: 'home' },       routerLinkActiveOptions: { exact: true } },
   { label: 'Schedule', icon: 'pi pi-calendar',   to: { name: 'games' } },
-  { label: 'Scoreboard', icon: 'pi pi-calendar',   to: { name: 'games' } },
+  { label: 'Scoreboard', icon: 'pi pi-calendar',   to: { name: 'scoreboard' } },
   { label: 'Standings',  icon: 'pi pi-globe',      to: { name: 'standings'} },
   { label: 'Stats',      icon: 'pi pi-chart-line', },
   { label: 'Settings',   icon: 'pi pi-cog',        to: { name: 'settings' } },

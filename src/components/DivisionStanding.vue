@@ -1,5 +1,5 @@
 <template>
-  <section class="w-full">
+  <section class="">
     <header class="mb-2 flex items-center justify-between">
       <h2 class="text-lg font-semibold tracking-tight">
         {{ heading }}

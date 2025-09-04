@@ -1,17 +1,17 @@
 <template>
-  <div class="grid gap-6 sm:gap-8 lg:gap-10">
-    <section class="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-      <Scoreboard class="w-full" />
+  <div class=" gap-6 sm:gap-8 lg:gap-10">
+    <section >
+      <Scoreboard :teamId="favTeamId"/>
     </section>
 
-    <section class="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-      <TenDayStretch class="w-full" @go-schedule="goSchedule" />
+    <section class="mt-6">
+      <TenDayStretch @go-schedule="goSchedule" />
     </section>
 
-    <section>
-      <div class="grid gap-6 lg:gap-8 lg:grid-cols-2">
-        <DivisionStanding :team-id="favTeamId" class="min-w-0" />
-        <TeamMVPs class="min-w-0" />
+    <section class="mt-6">
+      <div class="">
+        <DivisionStanding :team-id="favTeamId" class="" />
+        <TeamMVPs class="mt-6" />
       </div>
     </section>
   </div>
@@ -28,7 +28,9 @@ import { useTeam } from '@/composables/useTeam.ts'
 const router = useRouter();
 
 const favTeamId = favorite.value?.id ?? 143;
+
 function goSchedule() { router.push({ name: 'schedule' }); }
+
 
 
 </script>

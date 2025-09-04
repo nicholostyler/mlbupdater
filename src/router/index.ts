@@ -5,7 +5,7 @@ import LeagueView from '../views/LeagueView.vue';
 import SettingsView from '../views/SettingsView.vue';
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', name: 'home', component: HomeView },       // <-- MUST exist
+  { path: '/', name: 'home', component: HomeView },
   { path: '/games', name: 'games', component: TeamScheduleView },
   { path: '/league', name: 'league', component: LeagueView },
   { path: '/settings', name: 'settings', component: SettingsView },
@@ -30,7 +30,12 @@ const routes: RouteRecordRaw[] = [
     path: '/standings',
     name: 'standings',
     component: () => import('@/views/StandingsView.vue')
-  }
+  },
+  {
+    path: '/scoreboard',
+    name: 'scoreboard',
+    component: () => import('@/views/TodayGamesView.vue')
+  },
 ];
 
 export default createRouter({
